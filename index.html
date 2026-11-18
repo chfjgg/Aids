@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>病毒量與 CD4 模擬器｜愛滋週</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF3F6;--surface:#FFFFFF;--ink:#12202E;--muted:#55677A;--virus:#D62839;--cd4:#12907F;--line:#CBD6DE;--warn:#9A5B00;--ok-bg:#DDF3EE;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1822;--surface:#16242F;--ink:#E8EEF3;--muted:#94A7B8;--virus:#FF5A6A;--cd4:#3CCBB5;--line:#2B3C4A;--warn:#F2B04A;--ok-bg:#12372F;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1822;--surface:#16242F;--ink:#E8EEF3;--muted:#94A7B8;--virus:#FF5A6A;--cd4:#3CCBB5;--line:#2B3C4A;--warn:#F2B04A;--ok-bg:#12372F;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7}
+main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(1.8rem,6.5vw,2.7rem);line-height:1.2;font-weight:900;margin:8px 0 10px;letter-spacing:.01em}
+h2{font-size:1.1rem;font-weight:700;margin:0 0 8px}
+p{margin:0 0 10px}
+.lead{color:var(--muted);max-width:34em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:14px}
+.stage{padding:0;overflow:hidden}
+#cv{display:block;width:100%;height:220px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:clamp(1.3rem,5.5vw,2rem);font-weight:900;line-height:1.2}
+.stats span{font-size:.8rem;color:var(--muted)}
+#vl{color:var(--virus)}#cd{color:var(--cd4)}
+.bars{display:grid;gap:10px;margin-top:14px}
+.bar-h{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.bar span{display:block;height:100%;width:0;transition:width .35s}
+.lab{font-size:.85rem;color:var(--muted);margin-bottom:8px}
+.track{position:relative;height:48px;border-radius:12px;background:var(--line);overflow:hidden;margin-bottom:12px}
+.zone{position:absolute;top:0;bottom:0;left:34%;width:32%;background:var(--cd4);opacity:.4}
+.zl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--ink);pointer-events:none}
+.mk{position:absolute;top:0;bottom:0;left:0;width:8px;margin-left:-4px;background:var(--ink);border-radius:4px}
+.pill{width:100%;min-height:72px;font-size:1.25rem}
+.pill:disabled{opacity:.55;cursor:default}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.row label{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-left:auto}
+.row select{font:inherit;min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);padding:0 8px}
+.row button{min-height:44px;padding:6px 18px}
+.row #go{background:var(--ink);color:var(--bg)}
+.dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:12px;min-height:14px}
+.dots i{width:14px;height:14px;border-radius:50%;display:block}
+.dots i.y{background:var(--cd4)}.dots i.n{background:var(--virus)}
+.controls .lab{grid-column:1/-1;font-size:.85rem;color:var(--muted);margin-top:4px}
+button{font:inherit;font-weight:700;min-height:48px;border-radius:12px;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;padding:6px 8px}
+button.take{background:var(--cd4);border-color:var(--cd4);color:#fff}
+button.miss{border-color:var(--virus);color:var(--virus)}
+button.ghost{border-color:var(--line);color:var(--muted);font-weight:400;min-height:40px;grid-column:1/-1;margin-top:6px}
+button:active{transform:scale(.98)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#msg{border-left:6px solid var(--muted)}
+#msg.good{border-left-color:var(--cd4)}#msg.bad{border-left-color:var(--virus)}#msg.warn{border-left-color:var(--warn)}
+#uu{display:none;background:var(--ok-bg);border-color:var(--cd4)}
+#uu.on{display:block}
+#uu strong{font-size:1.6rem;font-weight:900;color:var(--cd4)}
+svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+.note{font-size:.85rem;color:var(--muted)}
+ul{margin:0;padding-left:1.2em}li{margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>每天一顆藥，<br>身體裡會發生什麼事？</h1>
+<p class="lead">你剛被診斷感染 HIV，今天開始抗病毒治療（ART）。指標每掃過一次就是一天，要在它跑到中間時按下「服藥」；沒按準就算漏服。看看病毒量和 CD4 免疫細胞怎麼變化。</p>
+</header>
+
+<section class="card stage" aria-label="血液中的病毒與免疫細胞示意">
+<canvas id="cv" role="img" aria-label="紅色圓點代表病毒，綠色圓圈代表 CD4 免疫細胞"></canvas>
+<div class="legend"><span><i style="background:var(--virus)"></i>HIV 病毒</span><span><i style="background:var(--cd4)"></i>CD4 免疫細胞</span></div>
+</section>
+
+<section class="card" aria-label="目前數值">
+<div class="stats">
+<div><b id="day">0</b><span>第幾天</span></div>
+<div><b id="vl">100,000</b><span>病毒量（copies/mL）</span></div>
+<div><b id="cd">250</b><span id="cdnote">CD4（個/μL）</span></div>
+</div>
+<div class="bars">
+<div><div class="bar-h"><span>體內藥物濃度</span><span id="dl">—</span></div><div class="bar"><span id="db" style="background:var(--cd4)"></span></div></div>
+<div><div class="bar-h"><span>測不到的持續天數（滿 30 天解鎖 U=U）</span><span id="ul">0 / 30</span></div><div class="bar"><span id="ub" style="background:var(--ink)"></span></div></div>
+<div><div class="bar-h"><span>抗藥性風險</span><span id="rl">0%</span></div><div class="bar"><span id="rb" style="background:var(--virus)"></span></div></div>
+</div>
+</section>
+
+<section class="card" aria-label="每日服藥">
+<div class="lab">指標每掃過一次就是一天。指標在中間綠色區時按「服藥」才算有吃；太早、太晚或沒按都算漏服。（電腦可按空白鍵）</div>
+<div class="track" aria-hidden="true"><div class="zone"></div><div class="zl">服藥區</div><div class="mk" id="mk"></div></div>
+<button class="take pill" id="pill" disabled>按下「開始」後，每天要按一次服藥</button>
+<div class="row"><button id="go">開始</button><button id="reset">重新開始</button><label>每天長度<select id="len"><option value="400">0.4 秒</option><option value="600" selected>0.6 秒</option><option value="900">0.9 秒</option></select></label></div>
+<div class="dots" id="dots" aria-label="最近 30 天的服藥紀錄（綠色已服藥，紅色漏服）"></div>
+</section>
+
+<section class="card" id="msg" aria-live="polite"><p id="mt"></p></section>
+
+<section class="card" id="uu" aria-live="polite">
+<strong>U = U</strong>
+<p>測不到 = 不會傳染（Undetectable = Untransmittable）。持續規律服藥、病毒量測不到達 6 個月以上，不會經由性行為把 HIV 傳給伴侶。（遊戲裡把時間縮短了。）</p>
+</section>
+
+<section class="card" aria-label="變化曲線">
+<h2>病毒量與 CD4 變化曲線</h2>
+<svg id="ch" viewBox="0 0 600 220" width="100%" role="img" aria-label="病毒量與 CD4 隨天數變化的折線圖"></svg>
+</section>
+
+<section class="card">
+<h2>從模擬學到的三件事</h2>
+<ul>
+<li>藥物要在體內維持足夠濃度才能壓住病毒，所以每天固定時間服藥很重要。</li>
+<li>長期漏服，病毒會在藥物不夠的情況下繁殖，累積抗藥性，之後可能要換藥。</li>
+<li>病毒量測不到，CD4 慢慢回升，生活與壽命都可以接近一般人；持續測不到，也不會傳染給伴侶。</li>
+</ul>
+<p class="note" style="margin-top:12px">本模擬為教學簡化版：實際病毒下降與 CD4 回升速度因人而異，偶爾漏服一次通常不會立刻反彈，但仍請依醫師指示服藥。這不是醫療建議；若有疑問，請洽醫院或疾管署相關諮詢管道。</p>
+</section>
+</main>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var cv=$('#cv'),ctx=cv.getContext('2d');
+var rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var W=300,H=220,S,vs=[],cs=[];
+var UND=1.3;
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function size(){var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);if(rm)draw()}
+function mk(r){var a=Math.random()*6.28,s=rm?0:.25+Math.random()*.5;return{x:r+Math.random()*(W-2*r),y:r+Math.random()*(H-2*r),vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:r}}
+function init(){S={day:0,V:5,C:250,D:0,res:0,und:0,hist:[{d:0,v:5,c:250}]};render()}
+function step(take){
+  S.day++;
+  S.D=take?S.D*0.4+0.6:S.D*0.5;
+  if(S.D>=0.7){S.V=Math.max(1.0,S.V-0.2)}
+  else if(S.D<0.4){S.V=Math.min(5,S.V+0.2)}
+  if(S.V>UND&&S.D<0.6)S.res=Math.min(100,S.res+3);
+  S.und=S.V<=UND?S.und+1:0;
+  if(S.V<=UND){S.C=Math.min(900,S.C+2.2)}
+  else if(S.V>=3){S.C=Math.max(50,S.C-(S.V-2)*0.7)}
+  S.hist.push({d:S.day,v:S.V,c:S.C});
+}
+function act(take,n){for(var i=0;i<n;i++)step(take);render()}
+function sync(){
+  var tv=S.V<=UND?0:Math.round((S.V-UND)*14),tc=Math.round(8+S.C/900*34);
+  while(vs.length<tv)vs.push(mk(7));while(vs.length>tv)vs.pop();
+  while(cs.length<tc)cs.push(mk(13));while(cs.length>tc)cs.pop();
+}
+function draw(){
+  var cv1=css('--virus'),cc=css('--cd4');
+  ctx.clearRect(0,0,W,H);
+  cs.forEach(function(p){
+    ctx.globalAlpha=.2;ctx.fillStyle=cc;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();
+    ctx.globalAlpha=1;ctx.strokeStyle=cc;ctx.lineWidth=2;ctx.stroke();
+    ctx.globalAlpha=.5;ctx.fillStyle=cc;ctx.beginPath();ctx.arc(p.x,p.y,4,0,6.283);ctx.fill();ctx.globalAlpha=1;
+  });
+  vs.forEach(function(p){
+    ctx.fillStyle=cv1;ctx.strokeStyle=cv1;ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r-2,0,6.283);ctx.fill();
+    for(var k=0;k<8;k++){var a=k*0.785;ctx.beginPath();ctx.moveTo(p.x+Math.cos(a)*(p.r-2),p.y+Math.sin(a)*(p.r-2));ctx.lineTo(p.x+Math.cos(a)*(p.r+3),p.y+Math.sin(a)*(p.r+3));ctx.stroke()}
+  });
+}
+function loop(){
+  [vs,cs].forEach(function(a){a.forEach(function(p){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<p.r||p.x>W-p.r)p.vx*=-1;
+    if(p.y<p.r||p.y>H-p.r)p.vy*=-1;
+  })});
+  draw();requestAnimationFrame(loop);
+}
+function chart(){
+  var svg=$('#ch'),L=40,R=560,T=12,B=190,md=Math.max(30,S.day);
+  var n=S.hist.length,st=Math.max(1,Math.floor(n/120)),pts=[];
+  for(var i=0;i<n;i+=st)pts.push(S.hist[i]);
+  if(pts[pts.length-1]!==S.hist[n-1])pts.push(S.hist[n-1]);
+  function x(d){return L+(R-L)*d/md}
+  function yv(v){return B-(B-T)*v/5}
+  function yc(c){return B-(B-T)*c/900}
+  var pv=pts.map(function(p){return x(p.d).toFixed(1)+','+yv(p.v).toFixed(1)}).join(' ');
+  var pc=pts.map(function(p){return x(p.d).toFixed(1)+','+yc(p.c).toFixed(1)}).join(' ');
+  var uy=yv(UND).toFixed(1);
+  svg.innerHTML=
+   '<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="'+css('--line')+'"/>'+
+   '<line x1="'+L+'" y1="'+uy+'" x2="'+R+'" y2="'+uy+'" stroke="'+css('--muted')+'" stroke-dasharray="4 4"/>'+
+   '<text x="'+(R-4)+'" y="'+(uy-4)+'" text-anchor="end">測不到的界線（&lt;20）</text>'+
+   '<polyline points="'+pv+'" fill="none" stroke="'+css('--virus')+'" stroke-width="3" stroke-linejoin="round"/>'+
+   '<polyline points="'+pc+'" fill="none" stroke="'+css('--cd4')+'" stroke-width="3" stroke-linejoin="round"/>'+
+   '<text x="'+L+'" y="'+(B+16)+'">第 0 天</text><text x="'+R+'" y="'+(B+16)+'" text-anchor="end">第 '+md+' 天</text>'+
+   '<text x="2" y="'+(T+8)+'" fill="'+css('--virus')+'" style="fill:'+css('--virus')+'">病毒量</text>'+
+   '<text x="598" y="'+(T+8)+'" text-anchor="end" style="fill:'+css('--cd4')+'">CD4</text>';
+}
+function render(){
+  var und=S.V<=UND;
+  $('#day').textContent=S.day;
+  $('#vl').textContent=und?'< 20':Math.round(Math.pow(10,S.V)).toLocaleString('en-US');
+  $('#cd').textContent=Math.round(S.C);
+  $('#cdnote').textContent='CD4（'+(S.C<200?'偏低':S.C<500?'恢復中':'接近正常')+'）';
+  $('#db').style.width=(S.D*100)+'%';
+  $('#dl').textContent=S.day===0?'尚未開始':S.D>=0.7?'足夠':S.D>=0.4?'偏低':'不足';
+  $('#ub').style.width=Math.min(S.und/30,1)*100+'%';
+  $('#ul').textContent=Math.min(S.und,30)+' / 30';
+  $('#rb').style.width=S.res+'%';
+  $('#rl').textContent=S.res+'%';
+  $('#uu').className='card'+(S.und>=30?' on':'');
+  var m,c='';
+  if(S.day===0){m='第 0 天：病毒量很高（100,000 copies/mL），CD4 只有 250。按下「開始」，指標會左右來回跑；每天在它跑到中間綠色區時按「服藥」，沒按準就算漏服。'}
+  else if(S.res>=100){m='抗藥性累積過高：目前的藥物可能失效，需要醫師重新評估並換藥。這就是長期漏服的代價。';c='bad'}
+  else if(S.und>=30){m='你已連續 30 天病毒量測不到，達成 U=U。繼續規律服藥，才能維持這個狀態。';c='good'}
+  else if(und){m='病毒量已降到測不到（&lt;20）。繼續規律服藥，CD4 會慢慢回升；持續 30 天後解鎖 U=U。'.replace('&lt;','<');c='good'}
+  else if(S.D<0.4&&S.V>2){m='藥物濃度不足，病毒正在反彈，也在累積抗藥性。盡快回到每天按時服藥。';c='bad'}
+  else if(S.D<0.7&&S.day>0){m='藥物濃度還沒到足夠水準。連續按時服藥，病毒量才會開始下降。';c='warn'}
+  else{m='藥物有效壓制病毒，病毒量正在下降。持續服藥，才會降到測不到。';c='good'}
+  $('#mt').textContent=m;
+  $('#msg').className='card '+c;
+  sync();chart();if(rm)draw();
+}
+var run=false,dayStart=0,taken=false,pressed=false,pos=0,note='',dir=1,dayMs=600,raf2=0,log=[];
+function setPill(){
+  var p=$('#pill');
+  if(!run){p.disabled=true;p.textContent='按下「開始」後，每天要按一次服藥';return}
+  p.disabled=pressed;p.textContent=pressed?note:'服藥';
+}
+function dots(){
+  $('#dots').innerHTML=log.slice(-30).map(function(t){return '<i class="'+(t?'y':'n')+'"></i>'}).join('');
+}
+function tick(){
+  if(!run)return;
+  var f=(performance.now()-dayStart)/dayMs;
+  if(f>=1){
+    log.push(taken);step(taken);taken=false;pressed=false;note='';dir=-dir;dayStart=performance.now();f=0;dots();render();setPill();
+  }
+  pos=dir>0?f:1-f;
+  $('#mk').style.left=(pos*100)+'%';
+  raf2=requestAnimationFrame(tick);
+}
+function press(){
+  if(!run||pressed)return;
+  pressed=true;
+  if(pos>=0.34&&pos<=0.66){taken=true;note='命中，已服藥 ✓'}
+  else{taken=false;note=pos<0.34?'太早了，今天算漏服 ✗':'太晚了，今天算漏服 ✗'}
+  setPill();
+}
+$('#pill').addEventListener('pointerdown',press);
+$('#pill').addEventListener('click',press);
+document.addEventListener('keydown',function(e){if(e.code==='Space'&&run){e.preventDefault();press()}});
+$('#go').addEventListener('click',function(){
+  run=!run;
+  $('#go').textContent=run?'暫停':'繼續';
+  if(run){dayStart=performance.now();taken=false;pressed=false;note='';tick()}else{cancelAnimationFrame(raf2)}
+  setPill();
+});
+$('#len').addEventListener('change',function(){dayMs=parseInt(this.value,10);dayStart=performance.now()});
+$('#reset').addEventListener('click',function(){
+  run=false;cancelAnimationFrame(raf2);taken=false;log=[];
+  $('#go').textContent='開始';pressed=false;note='';dir=1;$('#mk').style.left='0';
+  init();dots();setPill();
+});
+window.addEventListener('resize',function(){size();chart()});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){chart();if(rm)draw()});
+size();init();
+if(!rm)requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
